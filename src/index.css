@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: rgb(10 10 10);
+  --color-foreground: rgb(255 255 255);
+  --color-accent: rgb(167 139 250);
+  --color-accent-foreground: rgb(10 10 10);
+  --color-secondary: rgb(38 38 38);
+  --color-secondary-foreground: rgb(229 229 229);
+  --color-muted-foreground: rgb(161 161 161);
+  --color-border: rgb(38 38 38);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply text-balance;
+  }
+}
