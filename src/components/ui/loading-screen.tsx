@@ -5,15 +5,25 @@ import { useEffect, useState } from "react";
 
 export function LoadingScreen() {
     const [isLoading, setIsLoading] = useState(true);
+    const [progress, setProgress] = useState(0);
 
     useEffect(() => {
-        // Simulate loading time (adjust as needed)
-        const loadingTimer = setTimeout(() => {
-            setIsLoading(false);
-        }, 2000);
+        // Smooth progress animation
+        const progressInterval = setInterval(() => {
+            setProgress((prev) => {
+                if (prev >= 100) {
+                    clearInterval(progressInterval);
+                    setTimeout(() => {
+                        setIsLoading(false);
+                    }, 400);
+                    return 100;
+                }
+                return prev + 1.5;
+            });
+        }, 25);
 
         return () => {
-            clearTimeout(loadingTimer);
+            clearInterval(progressInterval);
         };
     }, []);
 
@@ -23,82 +33,100 @@ export function LoadingScreen() {
                 <motion.div
                     initial={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] as const }}
+                    transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] as const }}
                     className="fixed inset-0 z-[9999] flex items-center justify-center bg-background overflow-hidden"
                 >
+                    {/* Subtle expanding waves from center */}
                     <motion.div
-                        initial={{ filter: "blur(20px)", opacity: 0.3, scale: 0.95 }}
-                        animate={{ filter: "blur(0px)", opacity: 1, scale: 1 }}
-                        transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] as const }}
-                        className="text-center relative w-full max-w-md px-4"
+                        className="absolute inset-0 flex items-center justify-center"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] as const }}
                     >
-                        {/* Clean minimal loader */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.8, delay: 0.2, ease: [0.4, 0, 0.2, 1] as const }}
-                            className="mb-8"
-                        >
+                        {/* Multiple subtle expanding circles */}
+                        {[0, 1, 2, 3].map((i) => (
                             <motion.div
-                                className="w-16 h-16 md:w-20 md:h-20 mx-auto border-4 border-accent/30 border-t-accent rounded-full"
-                                animate={{ rotate: 360 }}
+                                key={i}
+                                className="absolute w-2 h-2 rounded-full"
+                                style={{
+                                    background: "radial-gradient(circle, rgba(167, 139, 250, 0.4) 0%, transparent 70%)",
+                                }}
+                                initial={{ scale: 0, opacity: 0.6 }}
+                                animate={{
+                                    scale: [0, 250, 250],
+                                    opacity: [0.6, 0.3, 0],
+                                }}
                                 transition={{
-                                    duration: 1,
+                                    duration: 3,
+                                    repeat: Number.POSITIVE_INFINITY,
+                                    ease: [0.4, 0, 0.2, 1] as const,
+                                    delay: i * 0.75,
+                                }}
+                            />
+                        ))}
+                    </motion.div>
+
+                    {/* Smooth reveal effect - expanding from center */}
+                    <motion.div
+                        className="absolute inset-0"
+                        style={{
+                            background: `radial-gradient(circle at center, transparent ${Math.min(progress, 100)}%, rgba(10, 10, 10, 0.99) ${Math.min(progress + 5, 105)}%)`,
+                        }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                    />
+
+                    {/* Center dot with smooth pulsing animation */}
+                    <motion.div
+                        className="absolute w-2 h-2 rounded-full bg-accent z-10"
+                        animate={{
+                            scale: [1, 1.8, 1.2, 1.8, 1],
+                            opacity: [0.8, 1, 0.6, 1, 0.8],
+                        }}
+                        transition={{
+                            duration: 2,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: [0.4, 0, 0.6, 1] as const,
+                        }}
+                        style={{
+                            boxShadow: "0 0 15px rgba(167, 139, 250, 0.6), 0 0 30px rgba(167, 139, 250, 0.3)",
+                        }}
+                    />
+
+                    {/* Orbiting particles around center */}
+                    {[...Array(6)].map((_, i) => {
+                        const angle = (i / 6) * Math.PI * 2;
+                        const radius = 40;
+                        return (
+                            <motion.div
+                                key={i}
+                                className="absolute w-1 h-1 rounded-full bg-accent/50"
+                                style={{
+                                    left: "50%",
+                                    top: "50%",
+                                }}
+                                animate={{
+                                    x: [
+                                        Math.cos(angle) * radius,
+                                        Math.cos(angle + Math.PI * 2) * radius,
+                                    ],
+                                    y: [
+                                        Math.sin(angle) * radius,
+                                        Math.sin(angle + Math.PI * 2) * radius,
+                                    ],
+                                    opacity: [0.3, 0.7, 0.3],
+                                    scale: [0.8, 1.2, 0.8],
+                                }}
+                                transition={{
+                                    duration: 3 + i * 0.2,
                                     repeat: Number.POSITIVE_INFINITY,
                                     ease: "linear",
+                                    delay: i * 0.1,
                                 }}
                             />
-                        </motion.div>
-
-                        {/* Animated progress bar */}
-                        <motion.div
-                            initial={{ width: 0, opacity: 0 }}
-                            animate={{ width: "100%", opacity: 1 }}
-                            transition={{ duration: 1.8, delay: 0.3, ease: [0.4, 0, 0.2, 1] as const }}
-                            className="h-1 bg-secondary/30 rounded-full overflow-hidden relative"
-                        >
-                            <motion.div
-                                initial={{ x: "-100%" }}
-                                animate={{ x: "100%" }}
-                                transition={{
-                                    duration: 1.5,
-                                    repeat: Number.POSITIVE_INFINITY,
-                                    ease: [0.4, 0, 0.6, 1] as const,
-                                }}
-                                className="h-full w-1/3 bg-gradient-to-r from-transparent via-accent to-transparent"
-                            />
-                        </motion.div>
-
-                        {/* Floating particles */}
-                        {[...Array(6)].map((_, i) => {
-                            const angle = (i / 6) * Math.PI * 2;
-                            const radius = 80;
-                            return (
-                                <motion.div
-                                    key={i}
-                                    className="absolute w-2 h-2 rounded-full bg-accent/30"
-                                    initial={{
-                                        x: "50%",
-                                        y: "50%",
-                                        opacity: 0,
-                                        scale: 0,
-                                    }}
-                                    animate={{
-                                        x: `calc(50% + ${Math.cos(angle) * radius}px)`,
-                                        y: `calc(50% + ${Math.sin(angle) * radius}px)`,
-                                        opacity: [0, 1, 0],
-                                        scale: [0, 1, 0],
-                                    }}
-                                    transition={{
-                                        duration: 2 + Math.random() * 2,
-                                        repeat: Number.POSITIVE_INFINITY,
-                                        delay: i * 0.3,
-                                        ease: [0.4, 0, 0.6, 1] as const,
-                                    }}
-                                />
-                            );
-                        })}
-                    </motion.div>
+                        );
+                    })}
                 </motion.div>
             )}
         </AnimatePresence>

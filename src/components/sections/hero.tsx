@@ -69,8 +69,8 @@ export function Hero() {
         className="mb-8 md:mb-12 w-full px-2 md:px-4"
       >
         <svg
-          className="w-full h-auto min-h-[80px] md:min-h-[100px]"
-          viewBox="0 0 1400 120"
+          className="w-full h-auto min-h-[10px] md:min-h-[150px]"
+          viewBox="0 0 1400 280"
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="xMidYMid meet"
           style={{ overflow: "visible" }}
@@ -80,32 +80,34 @@ export function Hero() {
               @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&display=swap');
               .name-text {
                 font-family: 'Poppins', sans-serif;
-                font-size: 72px;
+                font-size: 120px;
                 font-weight: 800;
-                letter-spacing: -2px;
+                letter-spacing: -4px;
                 fill: none;
                 stroke: currentColor;
-                stroke-width: 1.5;
+                stroke-width: 2.5;
                 stroke-linecap: round;
                 stroke-linejoin: round;
               }
               @media (max-width: 768px) {
                 .name-text {
-                  font-size: 48px;
-                  letter-spacing: -1px;
+                  font-size: 110px;
+                  letter-spacing: -3px;
+                  stroke-width: 2.2;
                 }
               }
               @media (max-width: 640px) {
                 .name-text {
-                  font-size: 36px;
-                  letter-spacing: -0.5px;
+                  font-size: 150px;
+                  letter-spacing: -2.5px;
+                  stroke-width: 2;
                 }
               }
             `}</style>
           </defs>
           <motion.text
             x="50%"
-            y="70"
+            y="160"
             textAnchor="middle"
             dominantBaseline="middle"
             className="name-text text-accent"
@@ -178,7 +180,7 @@ export function Hero() {
           transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] as const }}
           className="flex flex-col md:flex-row gap-4 justify-center items-center flex-wrap"
         >
-          <motion.button
+          {/* <motion.button
             onClick={() => {
               // Toggle: Change "projects" to "skills" when projects section is hidden
               const element = document.getElementById("skills");
@@ -190,7 +192,7 @@ export function Hero() {
           >
             View My Work
             <ArrowRight className="w-5 h-5" />
-          </motion.button>
+          </motion.button> */}
 
           <motion.button
             onClick={() => {
