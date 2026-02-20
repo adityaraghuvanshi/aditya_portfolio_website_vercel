@@ -171,7 +171,7 @@ export function Hero() {
           transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] as const }}
           className="text-lg md:text-xl text-muted-foreground text-center max-w-2xl mx-auto mb-8 leading-relaxed"
         >
-          I transform ideas into robust, scalable web applications. 2 years of experience building full-stack solutions
+          I transform ideas into mobile and web applications. 2 years of experience building full-stack solutions
           with React Native, React.js, Node.js, and modern technologies. Let's build something amazing together.
         </motion.p>
 
