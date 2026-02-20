@@ -172,7 +172,7 @@ export function Hero() {
           className="text-lg md:text-xl text-muted-foreground text-center max-w-2xl mx-auto mb-8 leading-relaxed"
         >
           I transform ideas into robust, scalable web applications. 2 years of experience building full-stack solutions
-          with React, Node.js, and modern technologies. Let's build something amazing together.
+          with React Native, React.js, Node.js, and modern technologies. Let's build something amazing together.
         </motion.p>
 
         <motion.div
@@ -240,7 +240,7 @@ export function Hero() {
           className="mt-16 md:mt-20 grid grid-cols-3 gap-4 md:gap-6 max-w-2xl mx-auto px-4"
         >
           {[
-            { label: "2+ Years", value: "Experience" },
+            { label: "26 Months", value: "Experience" },
             { label: "2", value: "Projects" },
             { label: "5", value: "Tech Stacks" },
           ].map((stat, index) => (

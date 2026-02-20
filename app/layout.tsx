@@ -10,7 +10,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Full-Stack Developer Portfolio",
   description:
-    "Professional portfolio showcasing 2+ years of full-stack development experience with React, Node.js, and modern web technologies.",
+    "Professional portfolio showcasing 26 months full-stack development experience with React, Node.js, and modern web technologies.",
   generator: "v0.app",
   metadataBase: new URL("https://example.com"),
   openGraph: {
