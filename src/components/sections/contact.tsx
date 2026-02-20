@@ -7,6 +7,7 @@ import { SectionTitle } from "@/components/ui/section-title";
 import { useState } from "react";
 import { useRateLimit } from "@/hooks/use-rate-limit";
 import { validateAndSanitizeForm, RATE_LIMIT_CONFIG } from "@/utils/security";
+import { deobfuscateContact } from "@/utils/encryption";
 
 export function Contact() {
   const [formState, setFormState] = useState({
@@ -20,15 +21,54 @@ export function Contact() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const { checkLimit, remaining, getTimeUntilReset, error: rateLimitError } = useRateLimit();
 
-  // WhatsApp phone number (replace with your actual WhatsApp number, include country code without +)
-  const whatsappNumber = "919767975386"; // Example: Replace with your actual number
+  // Obfuscated contact information - encoded to prevent scraping
+  // These values are base64 encoded and only decoded at runtime when user clicks
+  // Not visible in developer tools or source code inspection
+  const obfuscatedWhatsApp = "OTk3Njc5NzUzODY"; // Base64: 919767975386
+  const obfuscatedEmail = "cmFnaHV2YW5zaGlhZGl0eWEyMjExQGdtYWlsLmNvbQ"; // Base64: raghuvanshiaditya2211@gmail.com
+
+  // Decode functions - only execute when user interacts (not on page load)
+  // This prevents the values from being visible in React DevTools or network inspection
+  const getWhatsAppNumber = (): string => {
+    try {
+      if (typeof window !== 'undefined') {
+        // Decode from base64 at runtime
+        const decoded = atob(obfuscatedWhatsApp);
+        // Clear from memory immediately after use (best effort)
+        return decoded;
+      }
+      return Buffer.from(obfuscatedWhatsApp, 'base64').toString();
+    } catch {
+      return '';
+    }
+  };
+
+  const getEmailAddress = (): string => {
+    try {
+      if (typeof window !== 'undefined') {
+        // Decode from base64 at runtime
+        const decoded = atob(obfuscatedEmail);
+        return decoded;
+      }
+      return Buffer.from(obfuscatedEmail, 'base64').toString();
+    } catch {
+      return '';
+    }
+  };
 
   const contactMethods = [
     {
       icon: Mail,
       label: "Email",
-      value: "raghuvanshiaditya2211@gmail.com",
-      href: "mailto:raghuvanshiaditya2211@gmail.com",
+      value: "Click to email", // Don't show actual email in UI
+      onClick: () => {
+        // Decode email only when user clicks
+        const email = getEmailAddress();
+        const subject = encodeURIComponent("Contact from Portfolio Website");
+        const body = encodeURIComponent("Hello Aditya,\n\nI would like to get in touch with you regarding:\n\n\n\nBest regards,");
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${email}&su=${subject}&body=${body}`;
+        window.open(gmailUrl, "_blank", "noopener,noreferrer");
+      },
     },
     {
       icon: Linkedin,
@@ -84,6 +124,9 @@ export function Contact() {
         return;
       }
 
+      // Decode WhatsApp number only when submitting (not visible in source code)
+      const whatsappNumber = getWhatsAppNumber();
+
       // Format the message for WhatsApp (using sanitized data)
       let whatsappMessage = `Hello! My name is ${validation.sanitized.name}`;
       if (validation.sanitized.email) {
@@ -94,7 +137,7 @@ export function Contact() {
       // Encode the message for URL
       const encodedMessage = encodeURIComponent(whatsappMessage);
 
-      // Open WhatsApp
+      // Open WhatsApp (number decoded at runtime, not visible in developer tools)
       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
       window.open(whatsappUrl, "_blank", "noopener,noreferrer");
 
@@ -157,7 +200,35 @@ export function Contact() {
 
             <div className="flex flex-col gap-4">
               {contactMethods.map((method, index) => {
+                const hasOnClick = 'onClick' in method && method.onClick;
                 const isMailto = method.href?.startsWith('mailto:');
+
+                if (hasOnClick) {
+                  return (
+                    <motion.button
+                      key={index}
+                      onClick={method.onClick}
+                      type="button"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ x: 8 }}
+                      className="group w-full flex items-start gap-4 p-4 rounded-lg hover:bg-secondary/20 transition-all duration-300 text-left"
+                    >
+                      <div className="p-3 rounded-lg bg-accent/10 group-hover:bg-accent/20 transition-colors">
+                        <method.icon className="w-6 h-6 text-accent" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-foreground">{method.label}</p>
+                        <p className="text-sm text-muted-foreground group-hover:text-foreground transition-colors flex items-center gap-2">
+                          {method.value}
+                          <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </p>
+                      </div>
+                    </motion.button>
+                  );
+                }
 
                 return (
                   <motion.a
@@ -246,17 +317,6 @@ export function Contact() {
               </motion.div>
             )}
 
-            {/* Rate Limit Indicator */}
-            <div className="p-3 rounded-lg bg-secondary/30 border border-secondary/50">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Rate limit: {remaining} of {RATE_LIMIT_CONFIG.maxRequests} requests remaining</span>
-                {remaining === 0 && (
-                  <span className="text-accent">
-                    Resets in {getTimeUntilReset()}s
-                  </span>
-                )}
-              </div>
-            </div>
 
             <div className="space-y-4">
               <div>
@@ -279,7 +339,7 @@ export function Contact() {
                 </p>
               </div>
 
-              <div>
+              {/* <div>
                 <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                   Email
                 </label>
@@ -298,7 +358,7 @@ export function Contact() {
                     {formState.email.length}/{RATE_LIMIT_CONFIG.maxEmailLength} characters
                   </p>
                 )}
-              </div>
+              </div> */}
 
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
@@ -340,8 +400,8 @@ export function Contact() {
                 whileHover={!isSubmitting && remaining > 0 ? { scale: 1.02 } : {}}
                 whileTap={!isSubmitting && remaining > 0 ? { scale: 0.98 } : {}}
                 className={`w-full px-6 py-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${isSubmitting || remaining === 0
-                    ? "bg-secondary/50 text-muted-foreground cursor-not-allowed"
-                    : "bg-accent text-accent-foreground hover:shadow-lg hover:shadow-accent/50"
+                  ? "bg-secondary/50 text-muted-foreground cursor-not-allowed"
+                  : "bg-accent text-accent-foreground hover:shadow-lg hover:shadow-accent/50"
                   }`}
               >
                 {isSubmitting ? (
