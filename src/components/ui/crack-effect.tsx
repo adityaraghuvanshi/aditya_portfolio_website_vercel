@@ -206,6 +206,8 @@ export function CrackEffect() {
                     filter: index === 0 
                       ? "drop-shadow(0 0 3px rgba(255, 255, 255, 0.4)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.6))"
                       : "drop-shadow(0 0 2px rgba(255, 255, 255, 0.2))",
+                    willChange: "pathLength, opacity",
+                    transform: "translateZ(0)",
                   }}
                 />
               ))}

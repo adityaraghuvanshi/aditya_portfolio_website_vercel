@@ -1,70 +1,79 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { usePerformance } from "@/hooks/use-performance";
 
 export function CustomCursor() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const [trail, setTrail] = useState<Array<{ x: number; y: number; id: number }>>([]);
     const [isHovering, setIsHovering] = useState(false);
     const [dotOffset, setDotOffset] = useState({ x: 0, y: 0 });
+    const { trailLength, useBlur } = usePerformance();
+    const rafRef = useRef<number | null>(null);
 
     useEffect(() => {
         let trailId = 0;
-        const maxTrailLength = 30; // Increased trail length for more sensitivity
+        const maxTrailLength = trailLength;
         let lastX = 0;
         let lastY = 0;
         let lastUpdateTime = Date.now();
         let returnToCenterInterval: number | null = null;
         const minDistance = 1; // Very sensitive - update even on tiny movements
+        let pendingUpdate = false;
 
         const updateMousePosition = (e: MouseEvent) => {
-            const distance = Math.sqrt(
-                Math.pow(e.clientX - lastX, 2) + Math.pow(e.clientY - lastY, 2)
-            );
+            if (pendingUpdate) return;
+            pendingUpdate = true;
 
-            // Only update if moved enough (very sensitive threshold)
-            if (distance >= minDistance) {
-                setMousePosition({ x: e.clientX, y: e.clientY });
+            requestAnimationFrame(() => {
+                const distance = Math.sqrt(
+                    Math.pow(e.clientX - lastX, 2) + Math.pow(e.clientY - lastY, 2)
+                );
 
-                // Calculate movement direction and velocity
-                const now = Date.now();
-                const timeDelta = Math.max(now - lastUpdateTime, 1); // Prevent division by zero
-                const deltaX = e.clientX - lastX;
-                const deltaY = e.clientY - lastY;
-                const velocity = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                // Only update if moved enough (very sensitive threshold)
+                if (distance >= minDistance) {
+                    setMousePosition({ x: e.clientX, y: e.clientY });
 
-                // Normalize direction and scale by velocity (with max limit)
-                const maxOffset = 8; // Maximum offset distance
-                const speedFactor = Math.min(velocity / 15, 1); // Normalize speed
-                const offsetDistance = speedFactor * maxOffset;
+                    // Calculate movement direction and velocity
+                    const now = Date.now();
+                    const deltaX = e.clientX - lastX;
+                    const deltaY = e.clientY - lastY;
+                    const velocity = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-                if (velocity > 0.3) {
-                    const angle = Math.atan2(deltaY, deltaX);
-                    const offsetX = Math.cos(angle) * offsetDistance;
-                    const offsetY = Math.sin(angle) * offsetDistance;
-                    setDotOffset({ x: offsetX, y: offsetY });
+                    // Normalize direction and scale by velocity (with max limit)
+                    const maxOffset = 8; // Maximum offset distance
+                    const speedFactor = Math.min(velocity / 15, 1); // Normalize speed
+                    const offsetDistance = speedFactor * maxOffset;
 
-                    // Clear return to center interval if moving
-                    if (returnToCenterInterval) {
-                        window.clearInterval(returnToCenterInterval);
-                        returnToCenterInterval = null;
+                    if (velocity > 0.3) {
+                        const angle = Math.atan2(deltaY, deltaX);
+                        const offsetX = Math.cos(angle) * offsetDistance;
+                        const offsetY = Math.sin(angle) * offsetDistance;
+                        setDotOffset({ x: offsetX, y: offsetY });
+
+                        // Clear return to center interval if moving
+                        if (returnToCenterInterval) {
+                            window.clearInterval(returnToCenterInterval);
+                            returnToCenterInterval = null;
+                        }
                     }
+
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                    lastUpdateTime = now;
+
+                    // Add new point to trail with very sensitive tracking
+                    setTrail((prev) => {
+                        const newTrail = [
+                            { x: e.clientX, y: e.clientY, id: trailId++ },
+                            ...prev,
+                        ].slice(0, maxTrailLength);
+                        return newTrail;
+                    });
                 }
-
-                lastX = e.clientX;
-                lastY = e.clientY;
-                lastUpdateTime = now;
-
-                // Add new point to trail with very sensitive tracking
-                setTrail((prev) => {
-                    const newTrail = [
-                        { x: e.clientX, y: e.clientY, id: trailId++ },
-                        ...prev,
-                    ].slice(0, maxTrailLength);
-                    return newTrail;
-                });
-            }
+                pendingUpdate = false;
+            });
         };
 
         // Return dot to center when mouse stops moving
@@ -136,8 +145,11 @@ export function CustomCursor() {
             if (returnToCenterInterval) {
                 window.clearInterval(returnToCenterInterval);
             }
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+            }
         };
-    }, []);
+    }, [trailLength, useBlur]);
 
     return (
         <>
@@ -145,7 +157,7 @@ export function CustomCursor() {
             {trail.map((point, index) => {
                 const size = Math.max(6 - index * 0.12, 1.5);
                 const opacity = Math.max(0.5 - index * 0.016, 0.08);
-                const blur = Math.min(index * 0.5, 3);
+                const blur = useBlur ? Math.min(index * 0.5, 3) : 0;
 
                 return (
                     <motion.div
@@ -156,10 +168,11 @@ export function CustomCursor() {
                             top: point.y,
                             width: `${size}px`,
                             height: `${size}px`,
-                            transform: "translate(-50%, -50%)",
+                            transform: "translate(-50%, -50%) translateZ(0)",
                             opacity,
-                            filter: `blur(${blur}px)`,
+                            filter: useBlur ? `blur(${blur}px)` : "none",
                             boxShadow: `0 0 ${size * 1.5}px rgba(255, 255, 255, 0.4), 0 0 ${size * 3}px rgba(255, 255, 255, 0.2)`,
+                            willChange: "transform, opacity",
                         }}
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity }}
@@ -177,7 +190,8 @@ export function CustomCursor() {
                 style={{
                     left: mousePosition.x,
                     top: mousePosition.y,
-                    transform: "translate(-50%, -50%)",
+                    transform: "translate(-50%, -50%) translateZ(0)",
+                    willChange: "transform",
                 }}
                 animate={{
                     scale: isHovering ? 1.5 : 1,
