@@ -47,7 +47,7 @@ export function CustomCursor() {
 
                     // Clear return to center interval if moving
                     if (returnToCenterInterval) {
-                        clearInterval(returnToCenterInterval);
+                        window.clearInterval(returnToCenterInterval);
                         returnToCenterInterval = null;
                     }
                 }
@@ -71,12 +71,12 @@ export function CustomCursor() {
         const startReturnToCenter = () => {
             if (returnToCenterInterval) return;
 
-            returnToCenterInterval = setInterval(() => {
+            returnToCenterInterval = window.setInterval(() => {
                 setDotOffset((prev) => {
                     const distance = Math.sqrt(prev.x * prev.x + prev.y * prev.y);
                     if (distance < 0.1) {
                         if (returnToCenterInterval) {
-                            clearInterval(returnToCenterInterval);
+                            window.clearInterval(returnToCenterInterval);
                             returnToCenterInterval = null;
                         }
                         return { x: 0, y: 0 };
@@ -92,7 +92,7 @@ export function CustomCursor() {
         // Check for mouse inactivity
         let inactivityTimer: number;
         const resetInactivityTimer = () => {
-            clearTimeout(inactivityTimer);
+            window.clearTimeout(inactivityTimer);
             inactivityTimer = window.setTimeout(() => {
                 startReturnToCenter();
             }, 100); // Start returning after 100ms of no movement
@@ -132,9 +132,9 @@ export function CustomCursor() {
             window.removeEventListener("mouseover", handleMouseOver);
             document.removeEventListener("mouseenter", handleMouseEnter);
             document.removeEventListener("mouseleave", handleMouseLeave);
-            clearTimeout(inactivityTimer);
+            window.clearTimeout(inactivityTimer);
             if (returnToCenterInterval) {
-                clearInterval(returnToCenterInterval);
+                window.clearInterval(returnToCenterInterval);
             }
         };
     }, []);
