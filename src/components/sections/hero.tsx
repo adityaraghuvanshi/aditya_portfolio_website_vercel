@@ -142,7 +142,7 @@ export function Hero() {
             <motion.div animate={{ rotate: [0, 20, 0] }} transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}>
               <Sparkles className="w-4 h-4 text-accent" />
             </motion.div>
-            <span className="text-sm font-medium text-accent">Full-Stack Developer</span>
+            <span className="text-sm font-medium text-accent">Backend Developer</span>
           </motion.div>
         </motion.div>
 
@@ -171,8 +171,7 @@ export function Hero() {
           transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] as const }}
           className="text-lg md:text-xl text-muted-foreground text-center max-w-2xl mx-auto mb-8 leading-relaxed"
         >
-          I transform ideas into mobile and web applications. 2 years of experience building full-stack solutions
-          with React Native, React.js, Node.js, and modern technologies. Let's build something amazing together.
+          I build high-performance backend systems that scale. 2+ years of production experience designing APIs, real-time infrastructure, and data pipelines with Go, Node.js, and PostgreSQL. Let's build something reliable together.
         </motion.p>
 
         <motion.div
